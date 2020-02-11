@@ -54,7 +54,8 @@ pair<int, int> Snake::get_head()
 	cout << "A";
 	if (body_s.size() != 0) {
 		locate(head_last.x, head_last.y);
-		cout << "O";
+		if(head_last.x != 0)
+			cout << "O";
 
 	}
 	return pair<int, int>(head.x, head.y);

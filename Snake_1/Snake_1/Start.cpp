@@ -54,10 +54,9 @@ int main()
 	hide();
 	cin >> n >> m;
 	int dir = 3;
-	Snake snake(n / 2, m / 2, dir);
+	system("cls");
+	Snake snake(2 + n / 2, 2 + m / 2, dir);
 	Map mp(n, m, 1);
-	int num = 0;
-
 	while (1) {
 		food = random();
 		if (snake.body_s.count(food) == 0 && mp.wall.count(food) == 0 && food != snake.get_head()) {
@@ -66,8 +65,8 @@ int main()
 	}
 	locate(food.first, food.second);
 	cout << "F";
-
 	pair<int, int> now = snake.get_head();
+
 	while (1) {
 		locate(n + 4, 1);
 		cout << "ÄúµÄµÃ·Ö£º" << snake.get_score() << endl;
