@@ -1,8 +1,6 @@
 #include "Snake.h"
-#include <windows.h>
-#include <iostream>
+#include <Windows.h>
 using namespace std;
-
 void static locate(int x, int y)
 {
 	HANDLE hout = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -11,22 +9,122 @@ void static locate(int x, int y)
 	coord.Y = x;
 	SetConsoleCursorPosition(hout, coord);
 };
-
-Snake::Snake(int x, int y, int dir)
+void Snake::init_body(int len)
 {
-	head.x = x;
-	head.y = y;
-	score = 0;
-	length = 1;
-	direction = dir;
-	state = 0;
-	body_s.insert(pair<int,int>(x,y));
+	pii tmp_body;
+	for(int i=len-1;i>0;i--)
+	{
+		tmp_body.first = head.first + i;
+		tmp_body.second = head.second;
+		body.insert(tmp_body);
+		if (i == 1) {
+			head_last = tmp_body;
+		}
+		body_q.push(tmp_body);
+		locate(tmp_body.first, tmp_body.second);
+		cout << "O";
+	}
 }
 
-Snake::~Snake()
+Snake::Snake(int x, int y, int len, int dir)
 {
-
+	head.first = x;
+	head.second = y;
+	init_body(len);
+	body_q.push(head);
+	this->length = len;
+	this->direction = dir;
+	this->score = 0;
+	this->state = 2;
+	locate(x, y);
+	cout << "A";
 }
+
+bool Snake::move()
+{
+	pii new_head = head;
+	if (direction == 1) {
+		new_head.first--;
+	}
+	else if (direction == 2) {
+		new_head.first++;
+	}
+	else if (direction == 3) {
+		new_head.second--;
+	}
+	else if (direction == 4) {
+		new_head.second++;
+	}
+	head_last = head;
+	body.insert(head);
+	if (state == 1) {
+		length++;
+		state = 2;
+	}
+	else if (state == 2) {
+		pii tail = body_q.front();
+		body.erase(tail);
+		body_q.pop();
+		locate(tail.first, tail.second);
+		cout << " ";
+	}
+	else {
+		return false;
+	}
+	locate(head.first, head.second);
+	cout << "O";
+	head = new_head;
+	locate(head.first, head.second);
+	cout << "A";
+	body_q.push(head);
+	if (check()) {
+		return true;
+	}
+	else {
+		
+		locate(head.first, head.second);
+		cout << "X";
+		return false;
+		
+	}
+}
+
+bool Snake::check()
+{
+	if (body.count(head) == 1) {
+		state = 3;
+		return false;
+	}
+	return true;
+}
+
+
+void Snake::set_dir(int dir)
+{
+	this->direction = dir;
+	
+}
+
+void Snake::set_dir(char dir)
+{	
+	int new_dir = direction;
+	if (dir == 72) {
+		new_dir = 1;
+	}
+	else if (dir == 80) {
+		new_dir = 2;
+	}
+	else if (dir == 75) {
+		new_dir = 3;
+	}
+	else if (dir == 77) {
+		new_dir = 4;
+	}
+	if ((new_dir + 1) / 2 != (direction + 1) / 2) {
+		direction = new_dir;
+	}
+}
+
 
 int Snake::get_score()
 {
@@ -38,108 +136,30 @@ int Snake::get_len()
 	return length;
 }
 
-int Snake::get_direction()
+void Snake::eat_food()
 {
-	return direction;
+	this->state = 1;
 }
 
-int Snake::get_state()
+pii Snake::get_head()
 {
-	return state;
+	return head;
 }
 
-pair<int, int> Snake::get_head()
+bool Snake::is_blank(pii point)
 {
-	locate(head.x, head.y);
-	cout << "A";
-	if (body_s.size() != 0) {
-		locate(head_last.x, head_last.y);
-		if(head_last.x != 0)
-			cout << "O";
-
-	}
-	return pair<int, int>(head.x, head.y);
-
-}
-
-pair<int, int> Snake::get_tail()
-{
-	if (!body.empty() && state == 0) {
-		pair<int, int> tail = pair<int, int>(body.front().x, body.front().y);
-		body_s.erase(tail);
-		body.pop();
-		return tail;
-	}
-	else {
-		state = 0;
-		return pair<int, int>(-1, -1);
-
-	}
-
-}
-
-bool Snake::eat_food()
-{
-	state = 1;
-	length++;
-	score++;
-	return false;
-}
-
-void Snake::next()
-{
-
-	Point p_next;
-	if (direction == 1) {
-		p_next.x = head.x - 1;
-		p_next.y = head.y;
-	}
-	else if (direction == 2) {
-		p_next.x = head.x + 1;
-		p_next.y = head.y;
-
-	}
-	else if (direction == 3) {
-		p_next.x = head.x;
-		p_next.y = head.y - 1;
-
-	}
-	else if (direction == 4) {
-		p_next.x = head.x;
-		p_next.y = head.y + 1;
-
-	}
-	body.push(head);
-	head_last = head;
-	body_s.insert(pair<int, int>(head.x, head.y));
-	head = p_next;
-
-	pair<int, int> tail = get_tail();
-	if (tail.first != -1) {
-		locate(tail.first, tail.second);
-		cout << ' ';
-	}
-}
-
-bool Snake::set_dir(int dir)
-{
-	if ((dir+1) / 2 == (this->direction + 1) / 2) {
+	if (body.count(point) == 1 || point == head) {
 		return false;
 	}
-	else {
-		this->direction = dir;
-		return true;
-	}
-}
-
-bool Snake::is_correct()
-{
-	locate(20, 20);
-	if (body_s.count(pair<int, int>(head.x, head.y)) == 1) {
-		locate(head.x, head.y);
-		cout << "X"; 
-		return false;
-	}
-
 	return true;
 }
+
+void Snake::add_score(int score)
+{
+	this->score += score;
+}
+
+Snake::~Snake()
+{
+}
+

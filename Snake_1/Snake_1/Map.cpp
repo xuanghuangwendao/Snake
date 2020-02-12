@@ -1,10 +1,5 @@
 #include "Map.h"
 
-#include <windows.h>
-#include <iostream>
-using namespace std;
-
-
 void static locate(int x, int y)
 {
 	HANDLE hout = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -13,47 +8,94 @@ void static locate(int x, int y)
 	coord.Y = x;
 	SetConsoleCursorPosition(hout, coord);
 };
-
-
-
-Map::Map(int n, int m, int dif)
+Map::Map(int x, int y, bool has_border, int dif)
 {
-	this->n = n;
-	this->m = m;
+	this->x = x;
+	this->y = y;
 	this->dif = dif;
-	set_border();
-	//set_wall();
-}
-
-bool Map::set_border()
-{
-	for (int i = 2; i <= n + 3; i++) {
-		locate(i, 2);
-		wall.insert(pair<int, int>(i, 2));
-		cout << '#'; 
-		locate(i, m + 3);
-		wall.insert(pair<int, int>(i, m + 3));
-		cout << '#';
-		
+	this->number_wall = 0;
+	if (has_border) {
+		init_border();
 	}
-	for (int j = 2; j <= m + 3; j++) {
-		locate(2, j);
-		wall.insert(pair<int, int>(2, j));
-		cout << '#'; 
-		locate(n + 3, j);
-		wall.insert(pair<int, int>(n+3, j));
-		cout << '#';
-		}
-	return false;
 }
 
-bool Map::is_correct(int x, int y)
+Map::~Map()
 {
-	if (wall.count(pair<int, int>(x, y)) == 1) {
-		locate(x, y);
-		cout << "X";
+
+}
+
+void Map::init_border()
+{
+	locate(0, 0);
+	for (int i = 0; i <= x+1; i++) {
+		locate(i, 0);
+		border.insert(pii(i,0));
+		cout << "#";
+		locate(i, y+1);
+		border.insert(pii(i, y + 1));
+		cout << "#";
+	}
+	for (int j = 0; j <= y; j++) {
+		locate(0, j);
+		border.insert(pii(0, j));
+		cout << "#";
+		locate(x+1, j);
+		border.insert(pii(x + 1, j));
+		cout << "#";
+	}
+
+}
+
+void Map::create_wall(pii point)
+{
+	locate(point.first, point.second);
+	cout << "#";
+	wall[point] = time;
+	number_wall++;
+}
+
+bool Map::check(pii now)
+{
+	if (border.count(now) == 1 || wall.count(now) == 1) {
+		locate(now.first, now.second);
+		cout<<"X";
 		return false;
 	}
-	else
+	else {
 		return true;
+	}
 }
+
+bool Map::is_blank(pii point)
+{
+	if (border.count(point) == 1 || wall.count(point) == 1) {
+		
+		return false;
+	}
+	else {
+		return true;
+	}
+}
+
+bool Map::complete_wall()
+{
+	double now_dif = 50.0 * number_wall / (x * y);
+	if (now_dif < dif) {
+		return false;
+	}
+	else{
+		return true;
+	}
+}
+
+void Map::add_dif()
+{
+	dif = min(dif + 1, 10);
+}
+
+int Map::get_dif()
+{
+
+	return dif;
+}
+
