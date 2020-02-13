@@ -16,50 +16,68 @@ int time_game;
 bool game_default() {
 	size_x = 20;
 	size_y = 20;
-	dif_map = 0;
-	dif_speed = 0;
+	dif_map = 1;
+	dif_speed = 1;
 	dif_add = true;
 	return true;
 }
 
 bool game_user_define() {
 
-	system("cls");
-	cout << "请设置游戏参数：" << endl;
 	char dif_add_c;
-	cout << "请输入地图长度：";
-	cin >> size_x;
-	cout << "请输入地图宽度：";
-	cin >> size_y;
-	cout << "请输入地图难度（0-10）：";
-	cin >> dif_map;
-	cout << "请输入游戏速度（0-10）：";
-	cin >> dif_speed;
-	cout << "是否采用递增难度？（Y/N）：";
-	cin >> dif_add_c;
-	if (size_x > 10 && size_x < 50 &&
-		size_y>10 && size_y < 50 &&
-		dif_map >= 0 && dif_map <= 10 &&
-		dif_speed >= 0 && dif_speed <= 10 &&
-		(dif_add_c == 'Y' || dif_add_c == 'y' ||
-			dif_add_c == 'N' || dif_add_c == 'n')) {
-		if (dif_add_c == 'Y' || dif_add_c == 'y') {
-			dif_add = true;
-		}
-		else {
-			dif_add = false;
-		}
-		cout << "参数配置成功！" << endl;
-		system("Pause");
-		return true;
-	}
-	else {
-
-		cout << "参数配置失败！" << endl; 
-		system("Pause");
+	string s;
+	system("cls");
+	std::cout << "请设置游戏参数：" << endl;
+	cout << "请输入地图长度(10-50)：";
+	cin >> s;
+	size_x = atoi(s.c_str());
+	if (size_x < 10 || size_x > 50) {
+		cout<<"参数配置失败！";
+		system("pause");
 		return false;
 	}
-	
+	cout << "请输入地图宽度(10-100)：";
+	cin >> s;
+	size_y = atoi(s.c_str());
+	if (size_y < 10 || size_y > 100) {
+		cout << "参数配置失败！";
+		system("pause");
+		return false;
+	}
+	cout << "请输入地图难度（1-10）：";
+	cin >> s;
+	dif_map = atoi(s.c_str());
+	if (dif_map < 1 || dif_map > 10) {
+		cout << "参数配置失败！";
+		system("pause");
+		return false;
+	}
+	cout << "请输入游戏速度（1-10）：";
+	cin >> s;
+	dif_speed = atoi(s.c_str());
+	if (dif_speed < 1 || dif_speed > 10) {
+		cout << "参数配置失败！";
+		system("pause");
+		return false;
+	}
+	cout << "是否采用递增难度？（Y/N）：";
+	cin >> dif_add_c;
+	if (dif_add_c == 'Y' || dif_add_c == 'y') {
+		dif_add = true;
+	}
+	else if (dif_add_c == 'N' || dif_add_c == 'n') {
+		dif_add = false;
+	}
+	else {
+		cout << "参数配置失败！";
+		system("pause");
+		return false;
+	}
+
+	cout << "参数配置成功！";
+	system("pause");
+	return true;
+
 }
 bool game_begin_ui()
 {
@@ -103,7 +121,7 @@ bool game_begin()
 void game_init() {
 	snake = new Snake(size_x / 2, size_y / 2,2);
 	game_map = new Map(size_x, size_y, true, dif_map);
-	food = new Food();
+	food = new Food(size_x + size_y);
 	while (!game_map->complete_wall() ) {
 		game_map->create_wall(get_blank());
 	}
@@ -128,7 +146,7 @@ void game_run() {
 		
 		if (dif_add && (time_now - time_begin) / 20000 > level) {
 			level++;
-			now_speed = min(now_speed, 10);
+			now_speed = min(now_speed +1, 10);
 			game_map->add_dif();
 			while (!game_map->complete_wall()) {
 				game_map->create_wall(get_blank());
@@ -205,29 +223,74 @@ void print_info()
 	int line = 1;
 	int row = size_y + 3;
 	locate(line++, row);
-	cout << "|贪~吃~蛇|";
+	cout << "      |贪~吃~蛇|";
 	locate(line++, row);
+	cout << "---------------------";
+	locate(line++, row);
+	cout << "                     |";
+	locate(line - 1, row);
 	cout << "初始游戏速度:" << dif_speed;
 	locate(line++, row);
+	cout << "                     |";
+	locate(line - 1, row);
 	cout << "当前游戏速度:" << now_speed;
 	locate(line++, row);
+	cout << "                     |";
+	locate(line - 1, row);
 	cout << "初始地图难度:" << dif_map;
 	locate(line++, row);
+	cout << "                     |";
+	locate(line - 1, row);
 	cout << "当前地图难度:" << game_map->get_dif();
 	locate(line++, row);
+	cout << "                     |";
+	locate(line - 1, row);
+	cout << "---------------------";
 	locate(line++, row);
-	cout << "当前蛇的长度" << snake->get_len();
+	cout << "                     |";
+	locate(line - 1, row);
+	cout << "当前蛇的长度:" << snake->get_len();
 	locate(line++, row);
-	cout << "当前时间" << time_game;
+	cout << "                     |";
+	locate(line - 1, row);
+	cout << "当前游戏时间:" << time_game;
 	locate(line++, row);
+	cout << "                     |";
+	locate(line - 1, row);
+	cout << "当前蛇的位置:(" << snake->get_head().first << "," << snake->get_head().second << ")";
 	locate(line++, row);
+	cout << "                     |";
+	locate(line - 1, row);
+	cout << "当前食物位置:(" << food->get_food().first << "," << food->get_food().second << ")";
+	locate(line++, row);
+	cout << "                     |";
+	locate(line - 1, row);
+	cout << "当前食物剩余时间:" << food->get_time();
+
+	locate(line++, row);
+	cout << "                     |";
+	locate(line - 1, row);
+	cout << "---------------------";
+	locate(line++, row);
+	cout << "                     |";
+	locate(line - 1, row);
 	cout << "当前得分" << snake->get_score();
 	locate(line++, row);
+	cout << "                     |";
+	locate(line - 1, row);
+	cout << "---------------------";
 	locate(line++, row);
+	cout << "                     |";
+	locate(line - 1, row);
 	cout << "1:暂停";
 	locate(line++, row);
+	cout << "                     |";
+	locate(line - 1, row);
 	cout << "2:结束";
 	locate(line++, row);
+	cout << "                     |";
+	locate(line - 1, row);
+	cout << "---------------------";
 	
 
 

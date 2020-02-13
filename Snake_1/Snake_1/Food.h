@@ -20,5 +20,6 @@ public:
 	bool update();
 	void set_max_time(int time);
 	pii get_food();
+	int get_time();
 };
 
